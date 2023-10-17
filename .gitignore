@@ -1,0 +1,16 @@
+test/out.xlsx
+test/dd.xlsx
+test/Dictionnaire Chorio-Bact.xlsx
+test/fetal.xlsx
+.ipynb_checkpoints/pyproject-checkpoint.toml
+.ipynb_checkpoints/README-checkpoint.md
+pyunic.egg-info/dependency_links.txt
+pyunic.egg-info/PKG-INFO
+pyunic.egg-info/requires.txt
+pyunic.egg-info/SOURCES.txt
+pyunic.egg-info/top_level.txt
+pyunic/__pycache__/__init__.cpython-311.pyc
+pyunic/__pycache__/project.cpython-311.pyc
+pyunic/__pycache__/pyunic.cpython-311.pyc
+pyunic/.ipynb_checkpoints/__init__-checkpoint.py
+pyunic/.ipynb_checkpoints/pyunic-checkpoint.py
