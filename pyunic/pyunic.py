@@ -153,7 +153,7 @@ def get_s3fs():
         endpoint_url = os.getenv("S3ENDPOINT")
     )
 
-def make_path_list(path, max_depth = -1):
+def make_path_list(fs, path, max_depth = -1):
     """
     Recursively browse the minio file system starting at "path" up to a depth of "max_depth" and return a
     list of full path names to each table.
@@ -163,6 +163,8 @@ def make_path_list(path, max_depth = -1):
 
     Parameters
     ----------
+    fs : s3fs.S3FileSystem
+        The S3 filesystem to browse (use get_s3fs())
     path : str
         Initial path to search from (ex: "yellow-prd/enriched/mfm")
     max_depth : int, optional
@@ -175,8 +177,6 @@ def make_path_list(path, max_depth = -1):
         list of full paths to all tables found.
     """
 
-    fs = get_s3fs()
-    
     pathlist = []
 
     paths = [ p for p in fs.ls(path) if not (p.endswith("_delta_log") or p.endswith("_SUCCESS") or (".parquet" in p) or (".csv" in p)) ]
@@ -185,7 +185,7 @@ def make_path_list(path, max_depth = -1):
         pathlist.append(path)
     else:
         for p in paths:
-            pathlist.extend(make_path_list(p, max_depth - 1))
+            pathlist.extend(make_path_list(fs, p, max_depth - 1))
     return pathlist
     
 # Tools to help investigate datasets and perform QA.
@@ -262,7 +262,7 @@ class Project():
             An instance of Project with loaded tables for the specified project.
         """
         path = cls._get_path_from_bucket(bucket, name)
-        table_names_with_path = make_path_list(path, 1)
+        table_names_with_path = make_path_list(get_s3fs(), path, 1)
         print("Found the following minio tables:")
         for t in table_names_with_path:
             print(t)
