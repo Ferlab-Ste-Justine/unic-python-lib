@@ -269,13 +269,20 @@ class Project():
 
         table_dict = {}
         for table_name_with_path in table_names_with_path:
-            table_dict[table_name_with_path.removeprefix(path)] = spark.read.load("s3a://" + table_name_with_path)
+            if cls._get_bucket_colour(bucket) == "yellow":
+                table_dict[table_name_with_path.removeprefix(path)] = spark.read.format("delta").load("s3a://" + table_name_with_path)
+            else:
+                table_dict[table_name_with_path.removeprefix(path)] = spark.read.load("s3a://" + table_name_with_path)
 
         return cls(table_dict)
 
-    def _get_path_from_bucket(bucket, name):
-        colour = "green" if (bucket in ["released", "published"]) else "yellow"
-        return colour + "-prd/" + bucket + "/" + name + "/" + ("latest/" if (bucket == "released") else "")
+    @classmethod
+    def _get_bucket_colour(cls, bucket):
+        return "green" if (bucket in ["released", "published"]) else "yellow"
+
+    @classmethod
+    def _get_path_from_bucket(cls, bucket, name):
+        return cls._get_bucket_colour(bucket) + "-prd/" + bucket + "/" + name + "/" + ("latest/" if (bucket == "released") else "")
 
 
     def table(self, name):
