@@ -287,7 +287,7 @@ class Project():
         setattr(self, name, table)
 
     def remove_table(self, name):
-        self.tables = [t for t in tables if t != self.table(name)]
+        self.tables = [t for t in self.tables if t != self.table(name)]
         self.table_names = [n for n in table_names if n != name]
         delattr(self, name)
 
