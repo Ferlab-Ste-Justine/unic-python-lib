@@ -11,7 +11,7 @@ in the UniC.
 
 ## Setup and Configuration
 
-This package is designed to work from within the UniC's Posit Workbench environment, within the "Python 3.11" preconfigured virtual environment.  Notably, some code uses the switch/case syntax from python 3.10, and the package also depends on pandas 2.1, neither of which are part of the "Python 3.9" venv.
+This package is designed to work from within the UniC's Posit Workbench environment, within the "Python 3.10" preconfigured virtual environment.  Notably, some code uses the switch/case syntax from python 3.10, and the package also depends on pandas 2.1, neither of which are part of the "Python 3.9" venv.
 
 Features that depend on browsing minio (notably the Project.from_minio() constructor) depend on having the following environment variables set: "S3ACCESSKEY", "S3SECRETKEY", and "S3ENDPOINT".  In addition, a properly setup SparkSession will need to be passed as an argument (see test.py for a sample SparkConf)
 

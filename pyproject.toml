@@ -1,7 +1,7 @@
 [project]
 
 name = "pyunic"
-version = "0.0.1"
+version = "0.0.2"
 description = "Python utilities for UniC"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -28,7 +28,6 @@ classifiers = [
   # checked by "pip install". See instead "python_requires" below.
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3 :: Only",
 ]
 

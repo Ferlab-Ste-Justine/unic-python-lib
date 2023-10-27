@@ -1,5 +1,5 @@
 import os
-os.environ["PYSPARK_PYTHON"] = "/usr/local/share/python/python3.11/bin/python"
+os.environ["PYSPARK_PYTHON"] = "/usr/local/share/python/python3.10/bin/python"
 os.environ["PYARROW_IGNORE_TIMEZONE"] = "1"
 
 import pyspark

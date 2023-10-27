@@ -26,3 +26,7 @@ README_files/libs/quarto-html/quarto.js
 README_files/libs/quarto-html/tippy.css
 README_files/libs/quarto-html/tippy.umd.min.js
 README.html
+tests/dd.xlsx
+tests/Dictionnaire Chorio-Bact.xlsx
+tests/fetal.xlsx
+tests/out.xlsx
