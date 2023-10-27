@@ -12,7 +12,7 @@ be set to provide access to minio browsing capabilities.
 
 import os
 import pyspark
-from pyspark.sql.types import TimestampType, StringType, BooleanType, IntegerType, DecimalType, DateType
+from pyspark.sql.types import TimestampType, StringType, BooleanType, IntegerType, DecimalType, DateType, DoubleType
 import pyspark.sql.functions as f
 import pandas as pd
 import s3fs
@@ -37,21 +37,30 @@ def toPandas2(self):
     """
     listOfTimestampColumns = []
     listOfBooleanColumns = []
+    listOfDecimanColumns = []
     
     for c in self.schema:
-        if c.dataType == TimestampType():
-            listOfTimestampColumns.append(c.name)
-            self = self.withColumn(
-                c.name,
-                f.date_format(c.name, "yyyy-MM-dd HH:mm:ss"))
-        if c.dataType == BooleanType():
-            listOfBooleanColumns.append(c.name)
-            self = self.withColumn(
-                c.name,
-                f.col(c.name).cast("integer"))
-    
+        match c.dataType:
+            case TimestampType():
+                listOfTimestampColumns.append(c.name)
+                self = self.withColumn(
+                    c.name,
+                    f.date_format(c.name, "yyyy-MM-dd HH:mm:ss"))
+            case BooleanType():
+                listOfBooleanColumns.append(c.name)
+                self = self.withColumn(
+                    c.name,
+                    f.col(c.name).cast("integer"))
+            case DecimalType():
+                listOfDecimanColumns.append(c.name)
+                self = self.withColumn(
+                    c.name,
+                    f.col(c.name).cast("double"))
+
     df = self.toPandas() \
-        .astype({c: "datetime64[s]" for c in listOfTimestampColumns} | {c: "bool" for c in listOfBooleanColumns})
+        .astype({c: "datetime64[s]" for c in listOfTimestampColumns}
+                | {c: "bool" for c in listOfBooleanColumns}
+                | {c: "float64" for c in listOfDecimanColumns})
     
     return df
 
@@ -653,6 +662,8 @@ class Project():
             how="outer",
             indicator = True)
         
+        #TODO: check duplicates in dd
+
         print("Rows in dd which don't match any column in the dataset:")
         display(outer.loc[outer._merge == "left_only"].drop(columns=["_merge"]))
 
