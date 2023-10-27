@@ -4,7 +4,7 @@ name = "pyunic"
 version = "0.0.2"
 description = "Python utilities for UniC"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.11"
 license = {file = "LICENSE.txt"}
 
 #keywords = ["sample", "setuptools", "development"]  # Optional
@@ -34,7 +34,8 @@ classifiers = [
 dependencies = [ # Optional
   "pyspark == 3.3.1",
   "pandas >= 2.1.0",
-  "s3fs"
+  "s3fs",
+  "IPython"
 ]
 
 #[project.optional-dependencies] # Optional

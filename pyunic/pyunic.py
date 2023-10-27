@@ -16,6 +16,7 @@ from pyspark.sql.types import TimestampType, StringType, BooleanType, IntegerTyp
 import pyspark.sql.functions as f
 import pandas as pd
 import s3fs
+from IPython.display import clear_output
 
 
 # A collection of helper methods to be monkey patched onto pyspark.sql.Dataframe
@@ -114,17 +115,80 @@ def valueCounts(self, c):
     """
     return self.groupby(c).agg(f.count(c).alias("count")).sort("count", ascending = False).toPandas2()
 
-def nunique(self):
+def nunique(self, batch_size = 50):
     """
     Analog to pandas' nunique().  Shows the number of unique (aka pyspark.distinct()) values in each column.
+
+    Parameters
+    ----------
+    batch_size : int, optional
+        Number of columns to process at a time.  Too many columns and the query will struggle to complete,
+        too few and there will be too much overhead from multiple queries.  Testing suggests that 50 is a good
+        default value.
 
     Returns
     -------
     Dataframe
         Pandas dataframe with all the columns of the original pyspark dataframe and
         a single row with the count of unique values per column.    
-    """         
-    return self.agg(*(f.countDistinct(f.col(c)).alias(c) for c in self.columns)).toPandas()
+    """
+
+    dfs = []
+
+    for i in range(0, len(self.columns), batch_size):
+        clear_output(wait=True)
+        print("Processing columns " + self.columns[i] + " through " + self.columns[min(i+batch_size, len(self.columns)-1)])
+        df = self.select(self.columns[i:i+batch_size])
+        pdf = df.agg(*(f.countDistinct(f.col(c)).alias(c) for c in df.columns)).toPandas()
+        dfs.append(pdf)
+
+    return pd.concat(dfs, axis=1)
+
+def listAllNullColumns(self):
+    """
+    Creates a list of column names for columns containing all null values.  Uses the monkey patched countNotNulls() followed
+    by pandas operations to select columns with a count of 0.
+
+    Returns
+    -------
+    list(string)
+        A list of column names for columns containing all null values.
+    """
+    df = self.countNotNulls()
+
+    return list(df.loc[:, [(df[c] == 0).all() for c in df.columns]].columns)
+
+def listNDistinctValueColumns(self, n):
+    """
+    Creates a list of column names for columns which contain exactly n distinct values.  Uses the monkey patched nunique() followed
+    by pandas operations to select the appropriate columns.
+
+    Parameters
+    ----------
+    n : int
+        number of distinct values
+
+    Returns
+    -------
+    list(string)
+        A list of column names for columns which contain exactly n distinct values
+    """
+    df = self.nunique()
+
+    return list(df.loc[:, [(df[c] == n).all() for c in df.columns]].columns)
+
+def listSingleDistinctValueColumns(self):
+    """
+    Creates a list of column names for columns which contain exactly 1 distinct value (ex: all False).  Simply calls
+    listNDistinctValueColumns(1)
+
+    Returns
+    -------
+    list(string)
+        A list of column names for columns which contain exactly 1 distinct value
+    """
+    return self.listNDistinctValueColumns(1)
+
 
 # Register or "monkey patch" the methods onto pyspark.sql.DataFrame,
 # which allows method piping:
@@ -135,6 +199,9 @@ pyspark.sql.DataFrame.countNotNulls = countNotNulls
 pyspark.sql.DataFrame.countNullPercent = countNullPercent
 pyspark.sql.DataFrame.valueCounts = valueCounts
 pyspark.sql.DataFrame.nunique = nunique
+pyspark.sql.DataFrame.listAllNullColumns = listAllNullColumns
+pyspark.sql.DataFrame.listNDistinctValueColumns = listNDistinctValueColumns
+pyspark.sql.DataFrame.listSingleDistinctValueColumns = listSingleDistinctValueColumns
 
 # Tools to help browse minio
 
@@ -323,7 +390,10 @@ class Project():
 
                     dfs.append(df)
         
-        return pd.concat(dfs).set_index(["table", "column"])
+        if dfs == []:
+            return []
+        else:
+            return pd.concat(dfs).set_index(["table", "column"])
     
     def show_duplicated_rows(self):
         """
