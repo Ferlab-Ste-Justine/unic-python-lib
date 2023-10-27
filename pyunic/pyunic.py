@@ -343,7 +343,7 @@ class Project():
         table_dict = {}
         for table_name_with_path in table_names_with_path:
             clear_output(wait=True)
-            print("Reading: " + table_names_with_path)
+            print("Reading: " + table_name_with_path)
             if cls._get_bucket_colour(bucket) == "yellow":
                 table_dict[table_name_with_path.removeprefix(path)] = spark.read.format("delta").load("s3a://" + table_name_with_path)
             else:
