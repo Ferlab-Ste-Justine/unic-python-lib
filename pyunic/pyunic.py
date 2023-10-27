@@ -146,7 +146,7 @@ def nunique(self, batch_size = 50):
 
     for i in range(0, len(self.columns), batch_size):
         clear_output(wait=True)
-        print("Processing columns " + self.columns[i] + " through " + self.columns[min(i+batch_size, len(self.columns)-1)])
+        print("Processing columns " + self.columns[i] + " through " + self.columns[min(i+batch_size-1, len(self.columns)-1)])
         df = self.select(self.columns[i:i+batch_size])
         pdf = df.agg(*(f.countDistinct(f.col(c)).alias(c) for c in df.columns)).toPandas()
         dfs.append(pdf)
@@ -339,17 +339,16 @@ class Project():
         """
         path = cls._get_path_from_bucket(bucket, name)
         table_names_with_path = make_path_list(get_s3fs(), path, 1)
-        print("Found the following minio tables:")
-        for t in table_names_with_path:
-            print(t)
 
         table_dict = {}
         for table_name_with_path in table_names_with_path:
+            clear_output(wait=True)
+            print("Reading: " + table_names_with_path)
             if cls._get_bucket_colour(bucket) == "yellow":
                 table_dict[table_name_with_path.removeprefix(path)] = spark.read.format("delta").load("s3a://" + table_name_with_path)
             else:
                 table_dict[table_name_with_path.removeprefix(path)] = spark.read.load("s3a://" + table_name_with_path)
-
+        print("Read " + str(len(table_names_with_path)) + " tables.")
         return cls(table_dict)
 
     @classmethod
@@ -371,7 +370,7 @@ class Project():
 
     def remove_table(self, name):
         self.tables = [t for t in self.tables if t != self.table(name)]
-        self.table_names = [n for n in table_names if n != name]
+        self.table_names = [n for n in self.table_names if n != name]
         delattr(self, name)
 
     def show_date_ranges(self):
